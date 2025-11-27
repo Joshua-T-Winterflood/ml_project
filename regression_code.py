@@ -52,11 +52,10 @@ def plot_confusion_matrix(cm, title="Confusion Matrix"):
     plt.title(title)
     plt.tight_layout()
     plt.show(block=False)
-    path = os.path(os.getcwd(), "results", "Confusion Matrix")
-    filename = "confusion_matrix.png"
-    os.makedirs(path)
+    path = os.path.join(os.getcwd(), "results", "Confusion Matrix")
+    filename = f"{title}.png"
+    os.makedirs(path, exist_ok=True)
     plt.savefig(os.path.join(path, filename))
-
 
 # ROC plot
 def plot_roc_curve(y_true, y_proba, title="ROC Curve"):
@@ -72,9 +71,9 @@ def plot_roc_curve(y_true, y_proba, title="ROC Curve"):
     plt.legend()
     plt.tight_layout()
     plt.show(block=False)
-    path = os.path(os.getcwd(), "results", "ROC Curve")
-    filename = "roc_plot.png"
-    os.makedirs(path)
+    path = os.path.join(os.getcwd(), "results", "ROC Curve")
+    filename = f"{title}.png"
+    os.makedirs(path, exist_ok=True)
     plt.savefig(os.path.join(path, filename))
 
 def main():
@@ -133,9 +132,9 @@ def main():
     plt.title("Feature Importance – Logistic Regression (L2)")
     plt.tight_layout()
     plt.show(block=False)
-    path = os.path(os.getcwd(), "results", "Feature Importance")
+    path = os.path.join(os.getcwd(), "results", "Feature Importance")
     filename = "features_importance_L2.png"
-    os.makedirs(path)
+    os.makedirs(path, exist_ok=True)
     plt.savefig(os.path.join(path, filename))
 
     plt.figure(figsize=(10,6))
@@ -143,9 +142,9 @@ def main():
     plt.title("Feature Importance – Logistic Regression (L1)")
     plt.tight_layout()
     plt.show(block=False)
-    path = os.path(os.getcwd(), "results", "Feature Importance")
+    path = os.path.join(os.getcwd(), "results", "Feature Importance")
     filename = "features_importance_L1.png"
-    os.makedirs(path)
+    os.makedirs(path, exist_ok=True)
     plt.savefig(os.path.join(path, filename))
 
     # Confusion matrices
