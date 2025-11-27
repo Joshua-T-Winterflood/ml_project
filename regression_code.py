@@ -51,7 +51,6 @@ def plot_confusion_matrix(cm, title="Confusion Matrix"):
 
     plt.title(title)
     plt.tight_layout()
-    plt.show(block=False)
     path = os.path.join(os.getcwd(), "results", "Confusion Matrix")
     filename = f"{title}.png"
     os.makedirs(path, exist_ok=True)
@@ -70,7 +69,6 @@ def plot_roc_curve(y_true, y_proba, title="ROC Curve"):
     plt.title(title)
     plt.legend()
     plt.tight_layout()
-    plt.show(block=False)
     path = os.path.join(os.getcwd(), "results", "ROC Curve")
     filename = f"{title}.png"
     os.makedirs(path, exist_ok=True)
@@ -131,7 +129,6 @@ def main():
     plt.barh(features, coeff_l2)
     plt.title("Feature Importance – Logistic Regression (L2)")
     plt.tight_layout()
-    plt.show(block=False)
     path = os.path.join(os.getcwd(), "results", "Feature Importance")
     filename = "features_importance_L2.png"
     os.makedirs(path, exist_ok=True)
@@ -141,7 +138,6 @@ def main():
     plt.barh(features, coeff_l1)
     plt.title("Feature Importance – Logistic Regression (L1)")
     plt.tight_layout()
-    plt.show(block=False)
     path = os.path.join(os.getcwd(), "results", "Feature Importance")
     filename = "features_importance_L1.png"
     os.makedirs(path, exist_ok=True)
@@ -156,8 +152,6 @@ def main():
     plot_confusion_matrix(cm_l1, title="Confusion Matrix – L1 Logistic Regression")
     plot_roc_curve(y_test, y_proba_l1, title="ROC Curve – L1 Logistic Regression")
 
-    # Ensure blocking at the end
-    plt.show()
 
 if __name__ == "__main__":
     main()
