@@ -13,66 +13,9 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    roc_auc_score, confusion_matrix, balanced_accuracy_score,  roc_curve
-)
+from sklearn.metrics import confusion_matrix
 
-# Specificity
-def specificity_score(y_true, y_pred):
-    cm = confusion_matrix(y_true, y_pred)
-    tn, fp, fn, tp = cm.ravel()
-    return tn / (tn + fp) if (tn + fp) > 0 else 0.0
-
-# Unified metrics reporter
-def report_all_metrics(y_true, y_pred, y_proba, prefix=""):
-    print(f"\n--- {prefix} ---")
-    print(f"Accuracy:       {accuracy_score(y_true, y_pred):.3f}")
-    print(f"BalancedAcc:    {balanced_accuracy_score(y_true, y_pred):.3f}")
-    print(f"Precision:      {precision_score(y_true, y_pred):.3f}")
-    print(f"Recall/Sens:    {recall_score(y_true, y_pred):.3f}")
-    print(f"Specificity:    {specificity_score(y_true, y_pred):.3f}")
-    print(f"F1 Score:       {f1_score(y_true, y_pred):.3f}")
-    print(f"ROC-AUC:        {roc_auc_score(y_true, y_proba):.3f}")
-
-# Confusion matrix plot
-def plot_confusion_matrix(cm, title="Confusion Matrix"):
-    fig, ax = plt.subplots(figsize=(4,4))
-    ax.imshow(cm, cmap="Blues")
-    ax.set_xticks([0,1]); ax.set_yticks([0,1])
-    ax.set_xticklabels(["Negative", "Positive"])
-    ax.set_yticklabels(["Negative", "Positive"])
-    ax.set_xlabel("Predicted")
-    ax.set_ylabel("True")
-
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
-            ax.text(j, i, cm[i, j], ha="center", va="center", color="black")
-
-    plt.title(title)
-    plt.tight_layout()
-    path = os.path.join(os.getcwd(), "results", "Confusion Matrix")
-    filename = f"{title}.png"
-    os.makedirs(path, exist_ok=True)
-    plt.savefig(os.path.join(path, filename))
-
-# ROC plot
-def plot_roc_curve(y_true, y_proba, title="ROC Curve"):
-    fpr, tpr, _ = roc_curve(y_true, y_proba)
-    auc_val = roc_auc_score(y_true, y_proba)
-
-    plt.figure(figsize=(5,4))
-    plt.plot(fpr, tpr, label=f"AUC = {auc_val:.3f}")
-    plt.plot([0,1], [0,1], linestyle="--", color="gray")
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title(title)
-    plt.legend()
-    plt.tight_layout()
-    path = os.path.join(os.getcwd(), "results", "ROC Curve")
-    filename = f"{title}.png"
-    os.makedirs(path, exist_ok=True)
-    plt.savefig(os.path.join(path, filename))
+from utils import report_all_metrics, plot_confusion_matrix, plot_roc_curve
 
 def main():
     # Load data
@@ -129,7 +72,7 @@ def main():
     plt.barh(features, coeff_l2)
     plt.title("Feature Importance – Logistic Regression (L2)")
     plt.tight_layout()
-    path = os.path.join(os.getcwd(), "results", "Feature Importance")
+    path = os.path.join(os.getcwd(), "results", "Regression", "Feature Importance")
     filename = "features_importance_L2.png"
     os.makedirs(path, exist_ok=True)
     plt.savefig(os.path.join(path, filename))
@@ -138,19 +81,19 @@ def main():
     plt.barh(features, coeff_l1)
     plt.title("Feature Importance – Logistic Regression (L1)")
     plt.tight_layout()
-    path = os.path.join(os.getcwd(), "results", "Feature Importance")
+    path = os.path.join(os.getcwd(), "results", "Regression", "Feature Importance")
     filename = "features_importance_L1.png"
     os.makedirs(path, exist_ok=True)
     plt.savefig(os.path.join(path, filename))
 
     # Confusion matrices
     cm_l2 = confusion_matrix(y_test, y_pred_l2)
-    plot_confusion_matrix(cm_l2, title="Confusion Matrix – L2 Logistic Regression")
-    plot_roc_curve(y_test, y_proba_l2, title="ROC Curve – L2 Logistic Regression")
+    plot_confusion_matrix(cm_l2, os.path.join(os.getcwd(), "results", "Regression"), title="Confusion Matrix – L2 Logistic Regression")
+    plot_roc_curve(y_test, y_proba_l2, os.path.join(os.getcwd(), "results", "Regression"), title="ROC Curve – L2 Logistic Regression")
 
     cm_l1 = confusion_matrix(y_test, y_pred_l1)
-    plot_confusion_matrix(cm_l1, title="Confusion Matrix – L1 Logistic Regression")
-    plot_roc_curve(y_test, y_proba_l1, title="ROC Curve – L1 Logistic Regression")
+    plot_confusion_matrix(cm_l1, os.path.join(os.getcwd(), "results", "Regression"), title="Confusion Matrix – L1 Logistic Regression")
+    plot_roc_curve(y_test, y_proba_l1, os.path.join(os.getcwd(), "results", "Regression"), title="ROC Curve – L1 Logistic Regression")
 
 
 if __name__ == "__main__":
