@@ -18,6 +18,11 @@ from sklearn.metrics import (
     roc_auc_score, confusion_matrix, balanced_accuracy_score,  roc_curve
 )
 
+import tensorflow as tf
+from tensorflow.keras.layers import Input, Dense, Activation, Multiply
+from tensorflow.keras.models import Model
+
+
 # Specificity
 def specificity_score(y_true, y_pred):
     cm = confusion_matrix(y_true, y_pred)
@@ -74,6 +79,58 @@ def plot_roc_curve(y_true, y_proba, title="ROC Curve"):
     os.makedirs(path, exist_ok=True)
     plt.savefig(os.path.join(path, filename))
 
+
+
+# Attention-based Neural Network
+def run_attention_mlp(X_train_scaled, X_test_scaled, y_train, y_test, feature_names):
+    n_features = X_train_scaled.shape[1]
+
+    inp = Input(shape=(n_features,))
+    attn_scores = Dense(n_features, activation='tanh')(inp)
+    attn_weights = Activation('softmax')(attn_scores)
+    attended = Multiply()([inp, attn_weights])
+
+    h = Dense(32, activation='relu')(attended)
+    h = Dense(16, activation='relu')(h)
+    out = Dense(1, activation='sigmoid')(h)
+
+    model = Model(inputs=inp, outputs=out)
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+    print("\nTraining Attention-MLP...")
+    model.fit(
+        X_train_scaled,
+        y_train,
+        validation_split=0.2,
+        epochs=40,
+        batch_size=32,
+        verbose=1
+    )
+
+    y_proba_nn = model.predict(X_test_scaled).ravel()
+    y_pred_nn = (y_proba_nn > 0.5).astype(int)
+
+    report_all_metrics(y_test, y_pred_nn, y_proba_nn, prefix="Attention-MLP")
+
+    cm_nn = confusion_matrix(y_test, y_pred_nn)
+    plot_confusion_matrix(cm_nn, title="Confusion Matrix – Attention-MLP")
+
+    plot_roc_curve(y_test, y_proba_nn, title="ROC Curve – Attention-MLP")
+
+    attn_extractor = Model(inputs=model.input, outputs=model.layers[2].output)
+    attn_vals = attn_extractor.predict(X_test_scaled)
+    mean_attn = attn_vals.mean(axis=0)
+
+    plt.figure(figsize=(10, 6))
+    plt.barh(feature_names, mean_attn)
+    plt.title("Attention Feature Importance – Attention-MLP")
+    plt.tight_layout()
+    path = os.path.join(os.getcwd(), "results", "Attention Importance")
+    os.makedirs(path, exist_ok=True)
+    filename = "attention_importance.png"
+    plt.savefig(os.path.join(path, filename))
+
+    return model, mean_attn
 def main():
     # Load data
     file_path = os.path.join(os.getcwd(), "UCI_Heart_Disease_Dataset_Combined.csv")
@@ -151,7 +208,14 @@ def main():
     cm_l1 = confusion_matrix(y_test, y_pred_l1)
     plot_confusion_matrix(cm_l1, title="Confusion Matrix – L1 Logistic Regression")
     plot_roc_curve(y_test, y_proba_l1, title="ROC Curve – L1 Logistic Regression")
-
+    # Attention-based Neural Network
+    run_attention_mlp(
+        X_train_scaled,
+        X_test_scaled,
+        y_train,
+        y_test,
+        feature_names=X.columns
+    )
 
 if __name__ == "__main__":
     main()
