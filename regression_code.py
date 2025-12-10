@@ -80,11 +80,38 @@ def plot_roc_curve(y_true, y_proba, title="ROC Curve"):
     plt.savefig(os.path.join(path, filename))
 
 
+def compute_saliency_map(model, X, feature_names):
+
+    X_tensor = tf.convert_to_tensor(X, dtype=tf.float32)
+
+    with tf.GradientTape() as tape:
+        tape.watch(X_tensor)
+        preds = model(X_tensor, training=False)
+
+    grads = tape.gradient(preds, X_tensor)
+    grads_abs = tf.math.abs(grads)
+
+    mean_saliency = tf.reduce_mean(grads_abs, axis=0).numpy()
+
+    # SAVE PLOT
+    plt.figure(figsize=(10,6))
+    plt.barh(feature_names, mean_saliency)
+    plt.title("Saliency Map – Gradient Feature Importance")
+    plt.tight_layout()
+
+    path = os.path.join(os.getcwd(), "results", "Saliency Importance")
+    os.makedirs(path, exist_ok=True)
+    plt.savefig(os.path.join(path, "saliency_importance.png"))
+
+    return mean_saliency
+
 
 # Attention-based Neural Network
 def run_attention_mlp(X_train_scaled, X_test_scaled, y_train, y_test, feature_names):
+
     n_features = X_train_scaled.shape[1]
 
+    # Build model
     inp = Input(shape=(n_features,))
     attn_scores = Dense(n_features, activation='tanh')(inp)
     attn_weights = Activation('softmax')(attn_scores)
@@ -107,16 +134,19 @@ def run_attention_mlp(X_train_scaled, X_test_scaled, y_train, y_test, feature_na
         verbose=1
     )
 
+    # Predictions
     y_proba_nn = model.predict(X_test_scaled).ravel()
     y_pred_nn = (y_proba_nn > 0.5).astype(int)
 
     report_all_metrics(y_test, y_pred_nn, y_proba_nn, prefix="Attention-MLP")
 
+    # Confusion Matrix + ROC
     cm_nn = confusion_matrix(y_test, y_pred_nn)
     plot_confusion_matrix(cm_nn, title="Confusion Matrix – Attention-MLP")
-
     plot_roc_curve(y_test, y_proba_nn, title="ROC Curve – Attention-MLP")
 
+    # attention importance
+    # layer index → layers: [0=input, 1=dense(tanh), 2=softmax, 3=multiply]
     attn_extractor = Model(inputs=model.input, outputs=model.layers[2].output)
     attn_vals = attn_extractor.predict(X_test_scaled)
     mean_attn = attn_vals.mean(axis=0)
@@ -125,12 +155,17 @@ def run_attention_mlp(X_train_scaled, X_test_scaled, y_train, y_test, feature_na
     plt.barh(feature_names, mean_attn)
     plt.title("Attention Feature Importance – Attention-MLP")
     plt.tight_layout()
+
     path = os.path.join(os.getcwd(), "results", "Attention Importance")
     os.makedirs(path, exist_ok=True)
-    filename = "attention_importance.png"
-    plt.savefig(os.path.join(path, filename))
+    plt.savefig(os.path.join(path, "attention_importance.png"))
 
-    return model, mean_attn
+    # Saliency map
+    mean_saliency = compute_saliency_map(model, X_test_scaled, feature_names)
+
+    return model, mean_attn, mean_saliency
+
+
 def main():
     # Load data
     file_path = os.path.join(os.getcwd(), "UCI_Heart_Disease_Dataset_Combined.csv")
