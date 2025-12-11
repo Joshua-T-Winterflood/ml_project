@@ -9,7 +9,7 @@ import os
 import logging
 import sys
 
-from utils import report_all_metrics, plot_confusion_matrix, plot_roc_curve
+from utils import plot_confusion_matrix, plot_roc_curve
 
 def log(func):
     def inner(params):
@@ -32,7 +32,7 @@ def process_values(params):
         learning_rate_init=params[1],
         max_iter=params[2],
         random_state=42,
-        verbose=True
+        verbose=False
     )
 
     mlp.fit(params[3], params[5])
@@ -40,7 +40,7 @@ def process_values(params):
     y_pred_mlp = mlp.predict(params[4])
     y_proba_mlp = mlp.predict_proba(params[4])[:, 1]
 
-    report_all_metrics(params[6], y_pred_mlp, y_proba_mlp, prefix="MLP Classifier")
+    #report_all_metrics(params[6], y_pred_mlp, y_proba_mlp, prefix="MLP Classifier")
 
     cm_mlp = confusion_matrix(params[6], y_pred_mlp)
     plot_confusion_matrix(
