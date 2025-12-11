@@ -41,6 +41,7 @@ def plot_confusion_matrix(cm, path_to_saving_directory, title="Confusion Matrix"
     filename = f"{title}.png"
     os.makedirs(path_to_saving_directory, exist_ok=True)
     plt.savefig(os.path.join(path_to_saving_directory, filename))
+    plt.close()
 
 # ROC plot
 def plot_roc_curve(y_true, y_proba, path_to_saving_directory, title="ROC Curve"):
@@ -58,3 +59,4 @@ def plot_roc_curve(y_true, y_proba, path_to_saving_directory, title="ROC Curve")
     filename = f"{title}.png"
     os.makedirs(path_to_saving_directory, exist_ok=True)
     plt.savefig(os.path.join(path_to_saving_directory, filename))
+    plt.close()
