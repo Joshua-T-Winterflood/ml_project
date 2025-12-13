@@ -27,15 +27,18 @@ class Heart_Disease_NN(torch.nn.Module):
         self.criterion = torch.nn.BCELoss()
         self.optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
 
-    def forward(self, x):
-        # x: (batch, 10)
-        x = x.unsqueeze(-1)               # (batch, 10, 1)
-        x = self.embedding(x)             # (batch, 10, 10)
-
-        attn_out, _ = self.attn(x, x, x)  # (batch, 10, 10)
+    def forward(self, x, return_attention=False):
+        x = x.unsqueeze(-1)          # (batch, 10, 1)
+        x = self.embedding(x)        # (batch, 10, 10)
+    
+        attn_out, attn_weights = self.attn(x, x, x)
+        
+        if return_attention:
+            return attn_out, attn_weights
 
         flat = attn_out.reshape(attn_out.size(0), -1)
         return self.mlp(flat)
+
 
     def fit(self, X, y, iterations=200):
         X = torch.tensor(X, dtype=torch.float32)
